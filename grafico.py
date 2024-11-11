@@ -4,13 +4,28 @@ import pandas as pd
 from datetime import datetime
 import os
 
+# Variable para almacenar el token Bearer
+BEARER_TOKEN = ''
 
+def obtener_token():
+    global BEARER_TOKEN
+    try:
+        response = requests.post('https://api.invertironline.com/token', data={
+            'username': 'sdkniko',
+            'password': 'Niko2137!',
+            'grant_type': 'password'
+        })
+        response.raise_for_status()
+        BEARER_TOKEN = response.json()['access_token']
+        print('Token obtenido:', BEARER_TOKEN)
+    except requests.exceptions.RequestException as error:
+        print(f'Error al obtener el token: {error}')
 
 def obtener_precio_diario(mercado, simbolo, fecha_desde, fecha_hasta):
     url = f"https://api.invertironline.com/api/v2/{mercado}/Titulos/{simbolo}/Cotizacion/seriehistorica/{fecha_desde}/{fecha_hasta}/sinAjustar"
     headers = {
         'Accept': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6ImF0K2p3dCJ9.eyJzdWIiOiI1NzI4MTkiLCJJRCI6IjU3MjgxOSIsImp0aSI6ImI5NWVmYjBlLTY1M2MtNDhmMy1iY2M2LWExNGIwMTkzYzRjZCIsImNvbnN1bWVyX3R5cGUiOiIxIiwidGllbmVfY3VlbnRhIjoiVHJ1ZSIsInRpZW5lX3Byb2R1Y3RvX2J1cnNhdGlsIjoiVHJ1ZSIsInRpZW5lX3Byb2R1Y3RvX2FwaSI6IlRydWUiLCJ0aWVuZV9UeUMiOiJUcnVlIiwibmJmIjoxNzMwNjY3ODE2LCJleHAiOjE3MzA2Njg3MTYsImlhdCI6MTczMDY2NzgxNiwiaXNzIjoiSU9MT2F1dGhTZXJ2ZXIiLCJhdWQiOiJJT0xPYXV0aFNlcnZlciJ9.A-xbqYIhV8wWb72yxMWMSYct7Ax3aExx8Fxykx-JMko8x71kBvOKzXWp0jpP4J7jpcj28PNYtAfEdsBmUSpCV0M9pa42AvVfjcRmuZRy3wH65c5G_qP9IBE34pjLqsVhIzCp0NcSPZI0LC5dxEGLczNLdqWeb3Zsnrmw-YvY_XRQSU4kYoYcse5KncLbw79vCRYcmI-AZpItCQ9K7L8oytfRoCwTKxfnb5PHWZyDZgyBcc9Loxw1xriQOJWWBGBc7GISTyRm5EfKH6QI9mUDheS3bQVK0jNGcMLT_h-1CR9UczhuYOZGCJ34JRWnaCajR4fjRnofzlAyjkc8eZ_e_Q'
+        'Authorization': f'Bearer {BEARER_TOKEN}'
     }
 
     response = requests.get(url, headers=headers)
@@ -84,6 +99,9 @@ def graficar_ratio(precios_activo1, precios_activo2):
     plt.show()
 
 def main():
+    # Obtener el token al inicio del script
+    obtener_token()
+    
     mercado = 'bCBA'
     simbolo1 = os.getenv('SIMBOLO1')
     simbolo2 = os.getenv('SIMBOLO2')
